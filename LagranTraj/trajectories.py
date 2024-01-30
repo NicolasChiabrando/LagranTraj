@@ -4,7 +4,7 @@
 Trajectographie pour NetCDF
 Ph Arbogast & M Wimmer
 February 2018
-contact: meryl.wimmer@umr-cnrm.fr
+contact: vinita.deshmukh@lmd.ipsl.fr
 """
 
 #------------------------------------------------------------------------------
