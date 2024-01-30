@@ -1,2 +1,2 @@
 # LagranTraj
-Lagrangian trajectories : algorithm to analyze 
+Lagrangian trajectories: an algorithm to analyze
