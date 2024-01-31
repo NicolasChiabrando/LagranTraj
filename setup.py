@@ -3,7 +3,7 @@
 from setuptools import setup
 
 
-setup(name='LagranTraj',
+setup(name='lagrantraj',
       install_requires=['numpy','scipy','netCDF4','xarray','pandas'],
-      packages=['LagranTraj']
+      packages=['lagrantraj']
       )
