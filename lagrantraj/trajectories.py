@@ -1,11 +1,11 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Trajectographie pour NetCDF
-Ph Arbogast & M Wimmer
-February 2018
-contact: vinita.deshmukh@lmd.ipsl.fr
+Created on Wed Jan 31 17:38:29 2024
+
+@author: vinita
 """
+
 
 #------------------------------------------------------------------------------
 # Packages:
@@ -26,237 +26,9 @@ ZR=287.05 #J/K/mol: Gas constant for dry air
 ZKP=ZR/cp  # Ra/Cp (pour calcul de la température potentielle)
 g=9.81 # N/kg: Acceleration due to gravity at sea level
 
-#------------------------------------------------------------------------------
-# Misc functions
-#------------------------------------------------------------------------------    
-def loop_over_blocks(start_index,end_index,ndates=1,
-                     sourceType="ERA5", trajectories_duration=72,blocktype='NA', n_block=50,block_life='onset'):
-    """ Function to loop over the blocks """
-    if sourceType=='ERA5':
-        file="ERA5_dictionary.csv"
-    if sourceType=='model2':
-        file="con2_smt_dictionary.csv"
-    if sourceType=='model3':
-        file="con3_smt_dictionary.csv"
-    contour_index,time_index=get_block_indices(sourceType=sourceType,blocktype= blocktype, n_block= n_block, block_life= block_life)
-    
-
-    for block_index in range(start_index,end_index+1):
-        for idate in range(0,ndates):
-            compute_traj(contour_index[block_index],time_index[block_index],date_shift=0
-                         ,sourceType=sourceType,trajectories_duration=trajectories_duration)
-    return
-   
-# =============================================================================
-# def get_block_number(sourceType='ERA5'):
-#     """ Function to loop over the blocks """
-#     if sourceType=='ERA5':
-#         file="ERA5_dictionary.csv"
-#     if sourceType=='model2':
-#         file="con2_smt_dictionary.csv"
-#     if sourceType=='model3':
-#         file="con3_smt_dictionary.csv"    
-#     contour_index,time_index=get_block_indices(sourceType=sourceType,blocktype= blocktype, n_block= n_block, block_life= block_life)
-#     #contour_index,time_index=get_block_indices_pac(sourceType=sourceType)
-#     return np.size(contour_index)
-#     
-# =============================================================================
-
-def get_block_indices(sourceType='ERA5', blocktype='NA', n_block=50,block_life='onset'):   
-    if sourceType == 'ERA5':
-        flag_file = pd.read_csv('/media/vinita0503/LaCie/Data/ERA5/block_flag_list_ERA5.csv')
-        dic_file = pd.read_csv('/media/vinita0503/LaCie/Data/ERA5/ERA5_dictionary.csv')
-        dic_file = dic_file.rename(columns={'contour_index': 'Flag'})
-    elif sourceType == 'model3':
-        flag_file = pd.read_csv('block_flag_list_con3_smt.csv')
-        dic_file = pd.read_csv('con3_smt_dictionary.csv')
-        dic_file = dic_file.rename(columns={'contour_index': 'Flag'})
-    if blocktype == 'All':
-        dic_file = dic_file[1:]
-    if blocktype == 'NA':
-        dic_file = dic_file[dic_file['true_false']]
-    elif blocktype == 'PC':
-        df = flag_file.groupby('Flag').first().reset_index()
-        flag_f_mask = df[(df['Longitude'] < -130) & (df['Longitude'] > -180) & (df['Latitude'] > 35) & (df['Longitude'] < 70)]
-        dic_file = dic_file[dic_file['Flag'].isin(flag_f_mask.Flag)]
-        # Extracting block timestep and block_index
-
-    block_idx = np.array(dic_file['Flag'].head(n_block))
-    int_timestep_idx = np.array(dic_file['initial_time_step'].head(n_block).tolist())
-        
-    # Selecting those blocks from flag_file to get lat_c and lon_c
-    flag_file = flag_file[flag_file.Flag.isin(block_idx)]
-        
-        # Only the onset flag values nth == stage of block
-    if block_life=='onset':
-        timestep_idx = []
-        timestep_idx = int_timestep_idx
-    
-    elif block_life=='maintenance':
-        time_add = flag_file.groupby('Flag')['Intensity'].apply(lambda x: x.idxmin() - x.index.min())
-        timestep_idx=[int_timestep_idx + time_add for int_timestep_idx, time_add in zip(int_timestep_idx, time_add)]
-       
-    return block_idx , timestep_idx
 
 
-def dataSource(sourceType="ERA5"):
-    
-    """ Return data specifics - type should be "ERA5" or "model" """    
-    if sourceType=="ERA5":
-        #variable names
-        list_var_advec=['u','v','w']
-        list_var=['ta','pv','pv_anom']
-        # Root for files
-        Root_input='/media/vinita0503/LaCie/Data/ERA5/'
-        Root_output='/media/vinita0503/LaCie/Data/ERA5/'
-        # File name for each variable
-        File_name={}
-        for i_var in list_var_advec+list_var:
-            File_name[i_var]='ERA5_'+i_var+'_DJF.nc'
-        flagfile='/media/vinita0503/LaCie/Data/ERA5/block_flag_ERA5.nc'
-
-    if sourceType=="model2":
-        list_var_advec=['U','V','OMEGA']
-        list_var=['T','pv','pv_anom']
-        # Root for files
-        Root_input='/gpfswork/rech/ptn/usz67lr/block_trajectories/Data_model2_smt/'
-        Root_output='/gpfswork/rech/ptn/usz67lr/block_trajectories/traj_data_model_NA_all/'
-        # File name for each variable
-        File_name={}
-        for i_var in list_var_advec+list_var:
-            File_name[i_var]='histhf_'+i_var+'_dynamico_smt.nc'
-        flagfile='/gpfswork/rech/ptn/usz67lr/block_trajectories/Data_model2_smt/block_flag_con2_smt.nc'
-        
-    if sourceType=="model3":
-        list_var_advec=['U','V','OMEGA']
-        list_var=['T','pv','pv_anom']
-        # Root for files
-        Root_input='/gpfswork/rech/ptn/usz67lr/block_trajectories/Data_model_teq_58_smt/'
-        Root_output='/gpfswork/rech/ptn/usz67lr/block_trajectories/traj_data_model_NA_all_mai/'
-        # File name for each variable
-        File_name={}
-        for i_var in list_var_advec+list_var:
-            File_name[i_var]='histhf_'+i_var+'_dynamico3_smt.nc'
-        flagfile='/gpfswork/rech/ptn/usz67lr/block_trajectories/Data_model_teq_58_smt/block_flag_con3_smt.nc'
-    if sourceType=="ECMWF":
-        list_var_advec=['u','v','w']
-        list_var=['t','pv','q','pv_anom']
-        # Root for files
-        Root_input='/media/vinita0503/LaCie/Data/ECMWF_IFS/'
-        Root_output='/media/vinita0503/LaCie/Data/ECMWF_IFS/'
-        File_name = 'TC639_exp_n.nc'
-        
-        flagfile='/media/vinita0503/LaCie/Data/ECMWF_IFS/Block_flag_TC639_exp_cf.nc'   
-    return list_var_advec,list_var,Root_input,Root_output,File_name,flagfile
-
-#------------------------------------------------------------------------------
-# Computing trajectories for a given block ID
-#------------------------------------------------------------------------------
-def compute_traj(tracking_ID,date_index,date_shift=0,sourceType="ERA5",
-                 trajectories_duration=None):
-    """ tracking_ID is the index of the flag contour, trajectory duration is in hours"""
-
-    BACKWARD=True     # Backward or Forward trajectories?
-    SAVING=True       # Saving output ?
-    PLOT_TRAJ=True    # Plot Trajectories ?
-    initial_time_index=date_index+date_shift       # Time step !
-
-    # Source specific variables
-    list_var_advec,list_var,Root_input,Root_output,File_name,flagfile=dataSource(sourceType=sourceType)
-    
-    #------------------------------------------------------------------------------
-    # Seeding
-    #------------------------------------------------------------------------------
-    x0,y0,z0=get_seeds(initial_time_index,flagfile,tracking_ID)
-    
-
-    #------------------------------------------------------------------------------
-    # Read data
-    #------------------------------------------------------------------------------
-    if sourceType == "ECMWF":
-        LON_nc,LAT_nc,P_nc,data=read_data_ecmwf(File_name,Root_input,list_var,list_var_advec)
-    else:
-        LON_nc,LAT_nc,P_nc,data=read_data(File_name,Root_input,list_var,list_var_advec)
-
-    #------------------------------------------------------------------------------
-    # Trajectories calculation
-    #------------------------------------------------------------------------------
-    TIME_traj, LAT_traj, LON_traj, P_traj, U_traj, V_traj, W_traj,VAR_traj=\
-    compute_trajectories(x0,y0,z0,initial_time_index,
-                             LON_nc,LAT_nc,P_nc,data,
-                             list_var,list_var_advec,
-                             trajectories_duration=trajectories_duration,
-                             dt_data=12.,dt_traj=0.5,
-                             niter=4,BACKWARD=True)
-    
-    
-# =============================================================================
-#     TIME_traj, LAT_traj, LON_traj, P_traj, U_traj, V_traj, W_traj,VAR_traj=\
-#         compute_trajectories_old(x0,y0,z0,initial_time_index,
-#                              LON_nc,LAT_nc,P_nc,data,
-#                              list_var,list_var_advec,
-#                              trajectories_duration=72,npdt=12,njour=4,niter=4,BACKWARD=True)
-# =============================================================================
-    
- 
-         
-
-
-    #------------------------------------------------------------------------------
-    # saving Data in NetCDF format
-    #------------------------------------------------------------------------------
-    if SAVING:
-        save_output_data(SAVING,Root_output,tracking_ID,initial_time_index,
-                         list_var,list_var_advec,
-                         TIME_traj, LAT_traj, LON_traj, P_traj, U_traj, V_traj, W_traj,VAR_traj)
-
-    print('\t Finish !')
-    
-    return 
-
-#------------------------------------------------------------------------------
-# Read data (two modes possible: xarray or netcdf4)
-#------------------------------------------------------------------------------
-
-def read_data_xarray(File_name,Root_input,list_var,list_var_advec):
-    """ Read data """
-    print('Reading data with xarray...')
-    if isinstance(File_name,dict):
-        data={}
-        for i_var in list_var_advec+list_var:
-            ds=xr.open_dataset(Root_input+File_name[i_var])
-            data[i_var]=np.array(ds[i_var])
-    else:
-        data={}
-        for i_var in list_var_advec+list_var:
-            ds=xr.open_dataset(Root_input+File_name)
-            data[i_var]=(ds[i_var])
-            
-    LON_nc=ds['lon']
-    LAT_nc=ds['lat']        
-    P_nc=ds['level'][:]*100
-    
-    return LON_nc,LAT_nc,P_nc,data
-
-def read_data(File_name,Root_input,list_var,list_var_advec):
-    """ Read data """
-    print('Read data: ', end='')
-    if isinstance(File_name,dict):
-        data={}
-        for i_var in list_var_advec+list_var:
-            data[i_var]=   Dataset(Root_input+File_name[i_var],format='NETCDF4')
-    else:
-        data={}
-        for i_var in list_var_advec+list_var:
-            data[i_var]=   Dataset(Root_input+File_name,format='NETCDF4')
-            
-    LON_nc=data[list_var_advec[0]].variables['lon'][:]
-    LAT_nc=data[list_var_advec[0]].variables['lat'][:]        
-    P_nc=data[list_var_advec[0]].variables['level'][:]*100
-    
-    return LON_nc,LAT_nc,P_nc,data
-
-def read_data_ecmwf(File_name,Root_input,list_var,list_var_advec):
+def read_data_ecmwf(File_name,Root_input,list_var,list_var_advec,lat='latitude',lon='longitude',pres='isobaricInhPa'):
     """ Read data """
     print('Read data: ', end='')
     data={}
@@ -265,160 +37,15 @@ def read_data_ecmwf(File_name,Root_input,list_var,list_var_advec):
         data[i_var]=   Dataset(Root_input+File_name,format='NETCDF4')
             
             
-    LON_nc=data[list_var_advec[0]]['longitude'][:]
-    LAT_nc=data[list_var_advec[0]]['latitude'][:]        
-    P_nc=data[list_var_advec[0]]['isobaricInhPa'][:]*100
+    LON_nc=data[list_var_advec[0]][lon][:]
+    LAT_nc=data[list_var_advec[0]][lat][:]        
+    P_nc=data[list_var_advec[0]][pres][:]*100
     return LON_nc,LAT_nc,P_nc,data
-#------------------------------------------------------------------------------
-# rename dims and variable name
-#------------------------------------------------------------------------------
-def rename_coords_var(data,variable=None):
-    list_dims=list(data.dims)
-    list_var=list(data.data_vars)
-    return data.rename({list_dims[0]: 'time',list_dims[1]:'lat' ,list_dims[2]:'lon',list_var[0]:variable})  
-    
-#------------------------------------------------------------------------------
-# saving Data in NetCDF format
-#------------------------------------------------------------------------------
-def save_output_data(SAVING,Root_output,tracking_ID,initial_time_index,
-                     list_var,list_var_advec,
-                     TIME_traj, LAT_traj, LON_traj, P_traj, U_traj, V_traj, W_traj,VAR_traj):
-    """ Write output data to nc file """
-    
-    Number_Seeds=LAT_traj.shape[0]
-    ipdt=LAT_traj.shape[1]-1
-    
-    print('Saving the trajectories data: ', end='')
-        
-    ncdf = Dataset(Root_output+'Traj_ID'+str(tracking_ID)+'time_step_'+str(initial_time_index)+'.nc','w', format='NETCDF4')
-    ncdf.createDimension('n_seeds', Number_Seeds)
-    ncdf.createDimension('time_ind', ipdt+1)                        
-                  
-    for i_var,j_var in zip([TIME_traj, LAT_traj, LON_traj, P_traj, U_traj, V_traj, W_traj],
-                           ['time','lat','lon','P']+list_var_advec):
-        TMP_out = ncdf.createVariable(j_var, 'f8', ('n_seeds','time_ind'))  
-        TMP_out[:]=i_var
-                
-    for i_var in list_var:
-        TMP_out = ncdf.createVariable(i_var, 'f8', ('n_seeds','time_ind'))  
-        TMP_out[:]=VAR_traj[i_var]  
-            
-    #Metadata    
-    ncdf.initial_time=initial_time_index
-   
-    
-    ncdf.close()
-    print('ok')
-        
-    return
 
-#------------------------------------------------------------------------------
-# Seeding
-#------------------------------------------------------------------------------
-def get_seeds(initial_time_index,flagfile,tracking_ID,sourceType='ECMWF'):
-    """ Create seeds """
 
-    print('Creating seeds: ',end='')
 
-    # Initialize variables
-    VERIFY_SEEDING=True # -> Create a plot with the seeding
-    CROSS_SECTION=False # if False : seeding in a box;
-                        # if True : Number_Seeds_Longitude=1 or Number_Seeds_Latitude=1 or Number_Seeds_Longitude=Number_Seeds_Latitude
-    Initial_Longitude=-180
-    Initial_Latitude= 90.#45                 
-    Initial_Pressure=30000 #80000              
-    Number_Seeds_Longitude=361
-    Number_Seeds_Latitude=91
-    Number_Seeds_Pressure=1
-    Seeding_Resolution_Longitude=1.0
-    Seeding_Resolution_Latitude=-1.0 #0.5
-    Seeding_Resolution_Pressure=5000
 
-    # Number of seeds
-    Number_Seeds=Number_Seeds_Longitude*Number_Seeds_Latitude*Number_Seeds_Pressure  
 
-    if CROSS_SECTION:
-        if Number_Seeds_Longitude==Number_Seeds_Latitude:
-            Number_Seeds=Number_Seeds_Pressure*Number_Seeds_Latitude
-                
-    Latitude_values  =generate_seeds(Initial_Latitude,  Number_Seeds_Latitude,  Seeding_Resolution_Latitude)
-    Longitude_values =generate_seeds(Initial_Longitude, Number_Seeds_Longitude, Seeding_Resolution_Longitude)
-    Pressure_values  =generate_seeds(Initial_Pressure,  Number_Seeds_Pressure,  Seeding_Resolution_Pressure)
-    
-    #creating pv_box at initial timestep
-    flag_data=xr.open_dataset(flagfile)
-    flag_data = rename_coords_var(flag_data,variable='flag')
-    block=flag_data.flag
-    
-        
-    lon_slice=np.arange(Initial_Longitude,Number_Seeds_Longitude*Seeding_Resolution_Longitude
-                        +Initial_Longitude,Seeding_Resolution_Longitude)
-        
-    lat_slice=np.arange(Initial_Latitude,Number_Seeds_Latitude*Seeding_Resolution_Latitude
-                        +Initial_Latitude,Seeding_Resolution_Latitude)
-        
-    block=block[initial_time_index,:,:].sel(lat=lat_slice,lon=lon_slice, method='nearest')
-        
-    index=np.arange(10000,105000,5000)
-    if sourceType == 'ECMWF':
-        index = index[::-1]
-    block_all=xr.concat([block,block,block,block,block,block,block,block,block,block,
-                         block,block,block,block,block,block,block,block,block] ,pd.Index(index, name="level"))
-        
-        
-    # applying condition to statisfy PV anom cri
-    block_all=block_all.sel(level=Pressure_values)
-    
-    block_all=block_all.data.reshape(Number_Seeds)
-    
-    #to eliminate seeding point not satisfying PV cri    
-    cri= block_all==tracking_ID
-    
-        
-    #Seeding points coordinates: array with all coordinates
-    if CROSS_SECTION:
-        if Number_Seeds_Latitude==1:
-            x,z=np.meshgrid(Longitude_values,Pressure_values)
-            y=Latitude_values[0]
-        elif Number_Seeds_Longitude==1:
-            y,z=np.meshgrid(Latitude_values,Pressure_values)
-            x=Longitude_values[0]
-        elif Number_Seeds_Pressure==1:
-            x,y=np.meshgrid(Longitude_values,Latitude_values)
-            z=Pressure_values[0]
-        else:
-            x,z=np.meshgrid(Longitude_values,Pressure_values)
-            y,z=np.meshgrid(Latitude_values,Pressure_values)        
-    else:
-        y,z,x=np.meshgrid(Latitude_values,Pressure_values,Longitude_values)
-
-    #box area finish
-                
-    if isinstance(x,np.ndarray):x=x.reshape(Number_Seeds)
-    if isinstance(y,np.ndarray):y=y.reshape(Number_Seeds)
-    if isinstance(z,np.ndarray):z=z.reshape(Number_Seeds)
-    # criteria to the meshgrid 
-    x=x[cri]
-    y=y[cri]
-    z=z[cri]
-        
-    #redefining number od seeds 
-    Number_Seeds=x.shape[0]
-    print('Number of seeds=',Number_Seeds)    
-    #  Graphes to verify the seeding
-    if VERIFY_SEEDING:
-        import matplotlib.pyplot as plt
-        from mpl_toolkits.mplot3d import Axes3D
-        fig = plt.figure()
-        ax = plt.axes(projection='3d')
-        ax.scatter3D(x,y,z,c=z, edgecolors='black', cmap='Greens')
-        ax.invert_zaxis()
-        ax.set_xlabel('Longitude [°]')
-        ax.set_ylabel('Latitude [°]')
-        ax.set_zlabel('Pressure [Pa]')
-        plt.show()
-           
-    return x,y,z 
 
 #------------------------------------------------------------------------------    
 # Trajectories definition
@@ -625,3 +252,42 @@ def generate_seeds(Init,Number,Resolution):
     return np.asarray(out)
 
 
+
+
+
+
+
+#------------------------------------------------------------------------------
+# saving Data in NetCDF format
+#------------------------------------------------------------------------------
+def save_output_data(SAVING,Root_output,tracking_ID,initial_time_index,
+                     list_var,list_var_advec,
+                     TIME_traj, LAT_traj, LON_traj, P_traj, U_traj, V_traj, W_traj,VAR_traj):
+    """ Write output data to nc file """
+    
+    Number_Seeds=LAT_traj.shape[0]
+    ipdt=LAT_traj.shape[1]-1
+    
+    print('Saving the trajectories data: ', end='')
+        
+    ncdf = Dataset(Root_output+'Traj_ID'+str(tracking_ID)+'time_step_'+str(initial_time_index)+'.nc','w', format='NETCDF4')
+    ncdf.createDimension('n_seeds', Number_Seeds)
+    ncdf.createDimension('time_ind', ipdt+1)                        
+                  
+    for i_var,j_var in zip([TIME_traj, LAT_traj, LON_traj, P_traj, U_traj, V_traj, W_traj],
+                           ['time','lat','lon','P']+list_var_advec):
+        TMP_out = ncdf.createVariable(j_var, 'f8', ('n_seeds','time_ind'))  
+        TMP_out[:]=i_var
+                
+    for i_var in list_var:
+        TMP_out = ncdf.createVariable(i_var, 'f8', ('n_seeds','time_ind'))  
+        TMP_out[:]=VAR_traj[i_var]  
+            
+    #Metadata    
+    ncdf.initial_time=initial_time_index
+   
+    
+    ncdf.close()
+    print('ok')
+        
+    return
