@@ -28,7 +28,7 @@ g=9.81 # N/kg: Acceleration due to gravity at sea level
 
 
 
-def read_data_ecmwf(File_name,Root_input,list_var,list_var_advec,lat='latitude',lon='longitude',pres='isobaricInhPa'):
+def read_data(File_name,Root_input,list_var,list_var_advec,lat='latitude',lon='longitude',pres='isobaricInhPa'):
     """ Read data """
     print('Read data: ', end='')
     data={}
@@ -260,7 +260,7 @@ def generate_seeds(Init,Number,Resolution):
 #------------------------------------------------------------------------------
 # saving Data in NetCDF format
 #------------------------------------------------------------------------------
-def save_output_data(SAVING,Root_output,tracking_ID,initial_time_index,
+def save_output_data(Root_output,initial_time_index,
                      list_var,list_var_advec,
                      TIME_traj, LAT_traj, LON_traj, P_traj, U_traj, V_traj, W_traj,VAR_traj):
     """ Write output data to nc file """
@@ -270,7 +270,7 @@ def save_output_data(SAVING,Root_output,tracking_ID,initial_time_index,
     
     print('Saving the trajectories data: ', end='')
         
-    ncdf = Dataset(Root_output+'Traj_ID'+str(tracking_ID)+'time_step_'+str(initial_time_index)+'.nc','w', format='NETCDF4')
+    ncdf = Dataset(Root_output+'Traj_time_step_'+str(initial_time_index)+'.nc','w', format='NETCDF4')
     ncdf.createDimension('n_seeds', Number_Seeds)
     ncdf.createDimension('time_ind', ipdt+1)                        
                   
