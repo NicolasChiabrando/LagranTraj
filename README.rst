@@ -44,11 +44,7 @@ Ideally install it in a virtual environment (development version, master).
 
     pip install git+https://github.com/Vinita-D/LagranTraj/*
 
-Run the tests:
 
-.. code-block:: bash
-
-    python -m pytest
 
 ==========
 Tutorial
