@@ -126,6 +126,7 @@ Example: Computing trajectories
     plt.title(' Trajectories map (from 300 hpa pressure level) ', size=26)
     ax.set_extent([-180, 180,30, 90], ccrs.PlateCarree())
     ax.coastlines(linewidth=0.2)
+    plt.show()
     
     for i_traj in range(n_seeds):
         points = np.array([LON_traj[i_traj,:], LAT_traj[i_traj,:]]).T.reshape(-1, 1, 2)
