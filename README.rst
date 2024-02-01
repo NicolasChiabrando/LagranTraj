@@ -1,12 +1,14 @@
-.. image:: docs/traj_map.png
-   :width: 60%
-   :align: center
+
 #######################
 Lagrangian Trajectories
 #######################
-info:
+Info:
 Lagrangian trajectories are a simplified tool that uses the three components of the wind to interpolate designed for performing Lagrangian analysis in atmospheric science.
 It uses wind data to trace the air mass motion. This tool requires Input data in a netCDF file in gridded format. The seeding points are the points in x,y, and z directions (longitude, latitude, pressure) of which the lagrangian trajectories are computed in forward or backward.
+
+.. image:: docs/traj_map.png
+   :width: 60%
+   :align: center
 
 ###########
 References
