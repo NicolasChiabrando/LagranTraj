@@ -90,6 +90,7 @@ Example: Computing trajectories
                              dt_data=6.,dt_traj=0.5,
                              niter=4,BACKWARD=True):
          Compute Lagrangian trajectories - traj_duration is in hours 
+                                         - for backwards trajectories BACKWARD =True for Forward : BACKWARD = False
                                          - dt_data is input data temporal resolution in hours 
                                          - dt_traj is output trajectories temporal resolution in hours """
     TIME_traj, LAT_traj, LON_traj, P_traj, U_traj, V_traj, W_traj,VAR_traj=traj.compute_trajectories(lon_seeds,lat_seeds,pres_seeds,initial_time_step,
