@@ -42,7 +42,26 @@ def read_data(File_name,Root_input,list_var,list_var_advec,lat='latitude',lon='l
     P_nc=data[list_var_advec[0]][pres][:]*100
     return LON_nc,LAT_nc,P_nc,data
 
-
+#------------------------------------------------------------------------------
+# Read data multiple files where the filename is stored in a dictionary filename ={}
+#------------------------------------------------------------------------------ 
+def read_data(File_name,Root_input,list_var,list_var_advec):
+    """ Read data """
+    print('Read data: ', end='')
+    if isinstance(File_name,dict):
+        data={}
+        for i_var in list_var_advec+list_var:
+            data[i_var]=   Dataset(Root_input+File_name[i_var],format='NETCDF4')
+    else:
+        data={}
+        for i_var in list_var_advec+list_var:
+            data[i_var]=   Dataset(Root_input+File_name,format='NETCDF4')
+            
+    LON_nc=data[list_var_advec[0]].variables['lon'][:]
+    LAT_nc=data[list_var_advec[0]].variables['lat'][:]        
+    P_nc=data[list_var_advec[0]].variables['level'][:]*100
+    
+    return LON_nc,LAT_nc,P_nc,data
 
 
 
