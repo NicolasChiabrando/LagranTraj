@@ -55,7 +55,8 @@ Tutorial
 
 Example: Computing trajectories
 ---------------------------------------
-```python
+.. code-block:: python
+
 
 
    #import lagrantraj.trajectories as traj
@@ -175,6 +176,8 @@ Example: Computing trajectories
    .. image:: docs/traj_map.png
    :width: 50%
    :align: center
+
+
 
 
 
