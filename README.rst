@@ -170,10 +170,10 @@ Example: Computing trajectories
                 list_var_advect,list_var,
                 TIME_traj, LAT_traj, LON_traj, P_traj, U_traj, V_traj, W_traj,VAR_traj)    
    
-   .. image:: docs/seeding_points.png
+.. image:: docs/seeding_points.png
    :width: 40%
    :align: center    
-   .. image:: docs/traj_map.png
+.. image:: docs/traj_map.png
    :width: 50%
    :align: center
 
