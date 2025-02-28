@@ -322,7 +322,7 @@ def compute_trajectories_ERA5(x0, y0, m0, initial_time_index,
         for i_var in list_var:
             VAR_nc[i_var]=data[i_var].variables[i_var][int(i_ech/npdt),:,:,:]
         
-       PS2_nc =  PS[int(i_ech/npdt) + direction, :, :]
+        PS2_nc = PS[int(i_ech/npdt) + direction, :, :]
 
         U2_nc=data[list_var_advec[0]].variables[list_var_advec[0]][int(i_ech/npdt)+direction,:,:,:]
         V2_nc=data[list_var_advec[1]].variables[list_var_advec[1]][int(i_ech/npdt)+direction,:,:,:]
