@@ -45,7 +45,7 @@ Ideally install it in a virtual environment (development version, master).
 
 .. code:: bash
 
-    pip install git+https://github.com/Vinita-D/LagranTraj/
+    pip install git+https://github.com/NicolasChiabrando/LagranTraj/
 
 
 
