@@ -153,13 +153,13 @@ def compute_trajectories(x0,y0,z0,initial_time_index,
 
         # Computation
         for ipd in range(0,npdt):    
-                                                      
+            #print(f'ipd = {ipd}')            
                                                                                         
             ipdt=ipdt+1
             poi=(ipd+1)/npdt
 
             for ipoin in range(0,Number_Seeds):
-                   
+                #print(f'ipoin = {ipoin}')   
                 lo=LON_traj[ipoin,ipdt-1]
                 la=LAT_traj[ipoin,ipdt-1]
                 pre=P_traj[ipoin,ipdt-1]
@@ -173,6 +173,7 @@ def compute_trajectories(x0,y0,z0,initial_time_index,
                 w1=w_tmp
                 
                 for iter in range(1,niter):
+                   # print(f'iter = {iter}')
                     coco=np.cos(la*np.pi/180.0);
                     
                     
@@ -207,7 +208,7 @@ def compute_trajectories(x0,y0,z0,initial_time_index,
                 la=la+v_tmp*DT/Ra*180.0/np.pi
                 pre=pre+w_tmp*DT
 
-
+             #   print(w_tmp)
                 # Ensure coordinates lies within the bounds
                 try:
                     lo=lo-int(lo/180.)*360.
@@ -235,14 +236,14 @@ def compute_trajectories(x0,y0,z0,initial_time_index,
                     except ValueError:
                         VAR_traj[i_var][ipoin,ipdt]=np.nan
             end = time.perf_counter()
-            print(f"Elapsed time : {end - start:.2f} seconds")
+            #print(f"Elapsed time : {end - start:.2f} seconds")
     
    
     
     #print(counter)             
     return TIME_traj, LAT_traj, LON_traj, P_traj, U_traj, V_traj, W_traj,VAR_traj
 
-def compute_trajectories_ERA5(x0, y0, m0, initial_time_index,
+def compute_trajectories_ERA5(x0, y0, p0, initial_time_index,
                          LON_nc, LAT_nc, m_nc, data,
                          list_var, list_var_advec, PS, f,
                          trajectories_duration=None,
@@ -256,7 +257,6 @@ def compute_trajectories_ERA5(x0, y0, m0, initial_time_index,
     """
     
     print('Computing backward trajectories...: ', file = sys.stderr)
-
 
     # Defining number of seeds
     Number_Seeds=len(x0)
@@ -290,18 +290,17 @@ def compute_trajectories_ERA5(x0, y0, m0, initial_time_index,
     # Save the first position (seeding) at time 0
     LON_traj[:,0]=x0    
     LAT_traj[:,0]=y0  
-    m_traj[:,0]=m0
-    p0 = np.zeros(np.size(m0))
-    PS0=interpn((LAT_nc,LON_nc),PS[int(initial_time_index), :, :],np.array([y0,x0]).T, bounds_error = False)
+    P_traj[:,0]=p0
+    m0 = np.zeros(np.size(p0))
+    PS0=interpn((LAT_nc,LON_nc),PS[int(initial_time_index), :, :],np.array([y0,x0]).T)
     
     start = time.perf_counter()
-    for i in np.arange(np.size(p0)) :
+    for i in np.arange(np.size(m0)) :
         P0_list = f(PS0[i])
         #print(P0.shape)
         #print(m_nc)
-        p0[i] = interp1d(m_nc, P0_list, bounds_error = False)(m0[i])
-    P_traj[:,0] = p0
-    print(p0)
+        m0[i] = interp1d(P0_list, m_nc)(p0[i])
+    m_traj[:,0] = m0
     #end = time.perf_counter()
     #print(f"Elapsed time 1 : {end - start:.2f} seconds")
     # Initialize time variable
@@ -334,23 +333,24 @@ def compute_trajectories_ERA5(x0, y0, m0, initial_time_index,
         # Initialize other variables
         if ipdt==0:
             print('yes ipdt = 0', file = sys.stderr)
-            U_traj[:,ipdt]=interpn((m_nc,LAT_nc,LON_nc),U_nc,np.array([m0,y0,x0]).T, bounds_error=False)
-            V_traj[:,ipdt]=interpn((m_nc,LAT_nc,LON_nc),V_nc,np.array([m0,y0,x0]).T, bounds_error=False)
-            W_traj[:,ipdt]=interpn((m_nc,LAT_nc,LON_nc),W_nc,np.array([m0,y0,x0]).T, bounds_error=False)
+            U_traj[:,ipdt]=interpn((m_nc,LAT_nc,LON_nc),U_nc,np.array([m0,y0,x0]).T)
+            V_traj[:,ipdt]=interpn((m_nc,LAT_nc,LON_nc),V_nc,np.array([m0,y0,x0]).T)
+            W_traj[:,ipdt]=interpn((m_nc,LAT_nc,LON_nc),W_nc,np.array([m0,y0,x0]).T)
             for i_var in list_var:
-                VAR_traj[i_var][:,ipdt]=interpn((m_nc,LAT_nc,LON_nc),VAR_nc[i_var],np.array([m0,y0,x0]).T, bounds_error=False)
+                VAR_traj[i_var][:,ipdt]=interpn((m_nc,LAT_nc,LON_nc),VAR_nc[i_var],np.array([m0,y0,x0]).T)
         print(f'ipdt= {ipdt}')
 
         # Computation
         for ipd in range(0,npdt):    
                                                       
-            print(f'ipd = {ipd}')                                                                            
+            #print(f'ipd = {ipd}')                                                                            
             start = time.perf_counter()
             ipdt=ipdt+1
             poi=(ipd+1)/npdt
 
             for ipoin in range(0,Number_Seeds):
-                   
+                
+                print(f'ipoin = {ipoin}')
                 lo=LON_traj[ipoin,ipdt-1]
                 la=LAT_traj[ipoin,ipdt-1]
                 pre=P_traj[ipoin,ipdt-1]
@@ -366,19 +366,16 @@ def compute_trajectories_ERA5(x0, y0, m0, initial_time_index,
                 #print(w1) 
      
                 for iter in range(1,niter):
+             #       print(f'iter = {iter}')
                     coco=np.cos(la*np.pi/180.0);
                     
                     #start = time.perf_counter()
                     lo_1=(lo+u_tmp*DT/(Ra*coco)*180.0/np.pi)                                 
                     la_1=la+v_tmp*DT/Ra*180.0/np.pi
                     pre_1=pre+w_tmp*DT
-                    #print(pre, w_tmp, DT)
                     #if np.shape(pre_1) == (1,) : 
                     #    pre_1 = pre_1[0]
 
-                    ps_1=interp_3d(PS_nc, PS2_nc, LAT_nc, LON_nc, poi, la_1, lo_1)
-                    p_list_1 = f(ps_1)
-                    m_1 = interp1d(p_list_1, m_nc, bounds_error = False)(pre_1)
                     #print(m_1)
                     #end = time.perf_counter()
 
@@ -386,6 +383,15 @@ def compute_trajectories_ERA5(x0, y0, m0, initial_time_index,
 
                  #   start = time.perf_counter()
                     #print('lo_1,la_1,pre_1',lo_1,la_1,pre_1)
+                    
+                    # Find the corresponding m_1 
+                    try:
+                        ps_1=interp_3d(PS_nc, PS2_nc, LAT_nc, LON_nc, poi, la_1, lo_1)
+                        p_list_1 = f(ps_1)
+                        m_1 = interp1d(p_list_1, m_nc)(pre_1)
+                    except ValueError:
+                        m_1 = np.nan
+                    
                     # Ensure coordinates lies within the bounds
                     try:
                         lo_1=lo_1-int(lo_1/180.)*360.
@@ -398,7 +404,6 @@ def compute_trajectories_ERA5(x0, y0, m0, initial_time_index,
                         v2=interp_4d(V_nc, V2_nc, m_nc, LAT_nc, LON_nc, poi, m_1, la_1, lo_1)
                         w2=interp_4d(W_nc, W2_nc, m_nc, LAT_nc, LON_nc, poi, m_1, la_1, lo_1)
                     except ValueError:
-                        
                         u2 = np.nan
                         v2 = np.nan
                         w2 = np.nan
@@ -415,13 +420,16 @@ def compute_trajectories_ERA5(x0, y0, m0, initial_time_index,
                 pre = pre + w_tmp * DT
                 #print(pre)
             #    start = time.perf_counter()
-                ps = interp_3d(PS_nc, PS2_nc, LAT_nc, LON_nc, poi, la, lo)
-                p_list = f(ps)
-                m = interp1d(p_list, m_nc, bounds_error = False)(pre)
                 #end = time.perf_counter()
 
                 #print(f"Elapsed time 3 : {end - start:.2f} seconds")
 
+                try:
+                    ps = interp_3d(PS_nc, PS2_nc, LAT_nc, LON_nc, poi, la, lo)
+                    p_list = f(ps)
+                    m = interp1d(p_list, m_nc)(pre)
+                except ValueError:
+                    m=np.nan
                 # Ensure coordinates lies within the bounds
                 try:
                     lo=lo-int(lo/180.)*360.
@@ -473,7 +481,7 @@ def interp_4d(array_t,array_tpdt,P_nc,LAT_nc,LON_nc,poi,pre,la,lo):
     array_tpdt_extended=expand_array(array_tpdt,LON_nc,doLon=False)
     array_coord=(P_nc,LAT_nc,lon_extended)
     interp_coord=np.array([pre,la,lo]).T
-    return poi*interpn(array_coord,array_tpdt_extended,interp_coord, bounds_error=False)+(1-poi)*interpn(array_coord,array_t_extended,interp_coord, bounds_error=False)
+    return poi*interpn(array_coord,array_tpdt_extended,interp_coord)+(1-poi)*interpn(array_coord,array_t_extended,interp_coord)
 
 def expand_array(arrayIn,lon,doLon=True):
     """ Expand array in longitudes to account for periodic BC """
@@ -513,7 +521,7 @@ def interp_3d(array_t,array_tpdt,LAT_nc,LON_nc,poi,la,lo):
     array_tpdt_extended=expand_array_3d(array_tpdt,LON_nc,doLon=False)
     array_coord=(LAT_nc,lon_extended)
     interp_coord=np.array([la,lo]).T
-    return poi*interpn(array_coord,array_tpdt_extended,interp_coord, bounds_error = False)+(1-poi)*interpn(array_coord,array_t_extended,interp_coord, bounds_error = False)
+    return poi*interpn(array_coord,array_tpdt_extended,interp_coord) + (1-poi) * interpn(array_coord,array_t_extended,interp_coord)
                         
 #------------------------------------------------------------------------------    
 # Seeding points coordinates: different values possible
@@ -533,7 +541,7 @@ def generate_seeds(Init,Number,Resolution):
 #------------------------------------------------------------------------------
 # saving Data in NetCDF format
 #------------------------------------------------------------------------------
-def save_output_data(Root_output,initial_time_index,
+def save_output_data(Root_output,initial_time_index,dt,niter,Nhor,Np,
                      list_var,list_var_advec,
                      TIME_traj, LAT_traj, LON_traj, P_traj, U_traj, V_traj, W_traj,VAR_traj):
     """ Write output data to nc file """
@@ -543,7 +551,7 @@ def save_output_data(Root_output,initial_time_index,
     
     print('Saving the trajectories data: ', end='', file = sys.stderr)
         
-    ncdf = Dataset(Root_output+'Traj_time_step_'+str(initial_time_index)+'.nc','w', format='NETCDF4')
+    ncdf = Dataset(Root_output+f'Traj_time_step_{initial_time_index}_dt{dt}_niter{niter}_Nhor{Nhor}_Np{Nvert}.nc','w', format='NETCDF4')
     ncdf.createDimension('n_seeds', Number_Seeds)
     ncdf.createDimension('time_ind', ipdt+1)                        
                   
