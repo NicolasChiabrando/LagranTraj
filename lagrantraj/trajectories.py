@@ -551,7 +551,7 @@ def save_output_data(Root_output,initial_time_index,dt,niter,Nhor,Np,
     
     print('Saving the trajectories data: ', end='', file = sys.stderr)
         
-    ncdf = Dataset(Root_output+f'Traj_time_step_{initial_time_index}_dt{dt}_niter{niter}_Nhor{Nhor}_Np{Nvert}.nc','w', format='NETCDF4')
+    ncdf = Dataset(Root_output+f'Traj_time_step_{initial_time_index}_dt{dt}_niter{niter}_Nhor{Nhor}_Np{Np}.nc','w', format='NETCDF4')
     ncdf.createDimension('n_seeds', Number_Seeds)
     ncdf.createDimension('time_ind', ipdt+1)                        
                   
@@ -583,7 +583,7 @@ def save_output_data_ERA5(Root_output,initial_time_index, dt, niter, Nhor, Np,
     
     print('Saving the trajectories data: ', end='', file = sys.stderr)
         
-    ncdf = Dataset(Root_output+f'Traj_time_step_{initial_time_index}_dt{dt}_niter{niter}_Nhor{Nhor}_Np{Nvert}.nc','w', format='NETCDF4')
+    ncdf = Dataset(Root_output+f'Traj_time_step_{initial_time_index}_dt{dt}_niter{niter}_Nhor{Nhor}_Np{Np}.nc','w', format='NETCDF4')
     ncdf.createDimension('n_seeds', Number_Seeds)
     ncdf.createDimension('time_ind', ipdt+1)                        
                   
