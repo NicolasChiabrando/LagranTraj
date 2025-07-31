@@ -573,9 +573,9 @@ def save_output_data(Root_output,initial_time_index,dt,niter,Nhor,Np,
         
     return
 
-def save_output_data_ERA5(Root_output,initial_time_index,
+def save_output_data_ERA5(Root_output,initial_time_index, dt, niter, Nhor, Np,
                      list_var,list_var_advec,
-                     TIME_traj, LAT_traj, LON_traj, m_traj, P_traj, U_traj, V_traj, W_traj,VAR_traj):
+                     TIME_traj, LAT_traj, LON_traj, m_traj, P_traj, U_traj, V_traj, W_traj, VAR_traj):
     """ Write output data to nc file """
     
     Number_Seeds=LAT_traj.shape[0]
@@ -583,7 +583,7 @@ def save_output_data_ERA5(Root_output,initial_time_index,
     
     print('Saving the trajectories data: ', end='', file = sys.stderr)
         
-    ncdf = Dataset(Root_output+'Traj_time_step_'+str(initial_time_index)+'.nc','w', format='NETCDF4')
+    ncdf = Dataset(Root_output+f'Traj_time_step_{initial_time_index}_dt{dt}_niter{niter}_Nhor{Nhor}_Np{Nvert}.nc','w', format='NETCDF4')
     ncdf.createDimension('n_seeds', Number_Seeds)
     ncdf.createDimension('time_ind', ipdt+1)                        
                   
