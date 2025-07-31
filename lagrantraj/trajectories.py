@@ -350,7 +350,7 @@ def compute_trajectories_ERA5(x0, y0, p0, initial_time_index,
 
             for ipoin in range(0,Number_Seeds):
                 
-                print(f'ipoin = {ipoin}')
+                #print(f'ipoin = {ipoin}')
                 lo=LON_traj[ipoin,ipdt-1]
                 la=LAT_traj[ipoin,ipdt-1]
                 pre=P_traj[ipoin,ipdt-1]
