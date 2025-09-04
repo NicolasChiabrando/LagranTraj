@@ -333,11 +333,11 @@ def compute_trajectories_ERA5(x0, y0, p0, initial_time_index,
         # Initialize other variables
         if ipdt==0:
             print('yes ipdt = 0', file = sys.stderr)
-            U_traj[:,ipdt]=interpn((m_nc,LAT_nc,LON_nc),U_nc,np.array([m0,y0,x0]).T)
-            V_traj[:,ipdt]=interpn((m_nc,LAT_nc,LON_nc),V_nc,np.array([m0,y0,x0]).T)
-            W_traj[:,ipdt]=interpn((m_nc,LAT_nc,LON_nc),W_nc,np.array([m0,y0,x0]).T)
+            U_traj[:,ipdt]=interpn((m_nc,LAT_nc,LON_nc),U_nc,np.array([m0,y0,x0]).T, bounds_error=False)
+            V_traj[:,ipdt]=interpn((m_nc,LAT_nc,LON_nc),V_nc,np.array([m0,y0,x0]).T, bounds_error=False)
+            W_traj[:,ipdt]=interpn((m_nc,LAT_nc,LON_nc),W_nc,np.array([m0,y0,x0]).T, bounds_error=False)
             for i_var in list_var:
-                VAR_traj[i_var][:,ipdt]=interpn((m_nc,LAT_nc,LON_nc),VAR_nc[i_var],np.array([m0,y0,x0]).T)
+                VAR_traj[i_var][:,ipdt]=interpn((m_nc,LAT_nc,LON_nc),VAR_nc[i_var],np.array([m0,y0,x0]).T, bounds_error=False)
         print(f'ipdt= {ipdt}')
 
         # Computation
@@ -388,7 +388,7 @@ def compute_trajectories_ERA5(x0, y0, p0, initial_time_index,
                     try:
                         ps_1=interp_3d(PS_nc, PS2_nc, LAT_nc, LON_nc, poi, la_1, lo_1)
                         p_list_1 = f(ps_1)
-                        m_1 = interp1d(p_list_1, m_nc)(pre_1)
+                        m_1 = interp1d(p_list_1, m_nc, bounds_error=False)(pre_1)
                     except ValueError:
                         m_1 = np.nan
                     
@@ -427,7 +427,7 @@ def compute_trajectories_ERA5(x0, y0, p0, initial_time_index,
                 try:
                     ps = interp_3d(PS_nc, PS2_nc, LAT_nc, LON_nc, poi, la, lo)
                     p_list = f(ps)
-                    m = interp1d(p_list, m_nc)(pre)
+                    m = interp1d(p_list, m_nc, bounds_error=False)(pre)
                 except ValueError:
                     m=np.nan
                 # Ensure coordinates lies within the bounds
@@ -481,7 +481,7 @@ def interp_4d(array_t,array_tpdt,P_nc,LAT_nc,LON_nc,poi,pre,la,lo):
     array_tpdt_extended=expand_array(array_tpdt,LON_nc,doLon=False)
     array_coord=(P_nc,LAT_nc,lon_extended)
     interp_coord=np.array([pre,la,lo]).T
-    return poi*interpn(array_coord,array_tpdt_extended,interp_coord)+(1-poi)*interpn(array_coord,array_t_extended,interp_coord)
+    return poi*interpn(array_coord,array_tpdt_extended,interp_coord, bounds_error=False)+(1-poi)*interpn(array_coord,array_t_extended,interp_coord, bounds_error=False)
 
 def expand_array(arrayIn,lon,doLon=True):
     """ Expand array in longitudes to account for periodic BC """
@@ -521,7 +521,7 @@ def interp_3d(array_t,array_tpdt,LAT_nc,LON_nc,poi,la,lo):
     array_tpdt_extended=expand_array_3d(array_tpdt,LON_nc,doLon=False)
     array_coord=(LAT_nc,lon_extended)
     interp_coord=np.array([la,lo]).T
-    return poi*interpn(array_coord,array_tpdt_extended,interp_coord) + (1-poi) * interpn(array_coord,array_t_extended,interp_coord)
+    return poi*interpn(array_coord,array_tpdt_extended,interp_coord, bounds_error=False) + (1-poi) * interpn(array_coord,array_t_extended,interp_coord, bounds_error=False)
                         
 #------------------------------------------------------------------------------    
 # Seeding points coordinates: different values possible
