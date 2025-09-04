@@ -299,7 +299,7 @@ def compute_trajectories_ERA5(x0, y0, p0, initial_time_index,
         P0_list = f(PS0[i])
         #print(P0.shape)
         #print(m_nc)
-        m0[i] = interp1d(P0_list, m_nc)(p0[i])
+        m0[i] = interp1d(P0_list, m_nc, bounds_error=False)(p0[i])
     m_traj[:,0] = m0
     #end = time.perf_counter()
     #print(f"Elapsed time 1 : {end - start:.2f} seconds")
