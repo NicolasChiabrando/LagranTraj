@@ -3,7 +3,7 @@
 Lagrangian Trajectories
 #######################
 Info:
-Lagrangian Trajectories is a specialized tool for conducting Lagrangian analysis for atmospheric science research. It utilizes wind data to track the movement of air masses, offering insights into atmospheric dynamics. This tool operates by interpolating wind data across three components (longitude, latitude, and pressure) to generate trajectories. These trajectories can be computed either forward or backward in time. The tool requires input data in the form of a netCDF file with a gridded format. Seeding points, specified by their coordinates in the x, y, and z directions, serve as the starting points for the computation of Lagrangian trajectories.
+Lagrangian Trajectories is a specialized tool for conducting Lagrangian analysis for atmospheric science research. It utilizes wind data to track the movement of air masses, offering insights into atmospheric dynamics. This tool operates by interpolating wind data across three components (longitude, latitude, and pressure) to generate trajectories. These trajectories can be computed either forward or backward in time. The tool requires input data in the form of a netCDF file with a gridded format. Seeding points, specified by their coordinates in the x, y, and z directions, serve as the starting points for the computation of Lagrangian trajectories. This is an updated version of https://github.com/Vinita-D/LagranTraj/. This version allows to work with ERA5 model level grid which is not orthogonal : w is the actual pressure wind speed while the grid is in model level.
 Please look at the tutorial for further details
 
 
@@ -26,13 +26,14 @@ Authors
 - Léo Ducongé
 - Gwendal Rivière
 - Sébastien Fromang
+- Nicolas Chiabrando
 
 
 ###########
 License
 ###########
 This tool is open-source under the [your chosen license]. Feel free to use and modify it according to the license terms.
-| Please cite **LagraTraj** in your publication: https://github.com/Vinita-D/LagranTraj/.
+| Please cite **LagraTraj** in your publication: https://github.com/NicolasChiabrando/LagranTraj/ .
 
 ============
 Installation
