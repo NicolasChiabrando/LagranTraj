@@ -541,7 +541,74 @@ def generate_seeds(Init,Number,Resolution):
 #------------------------------------------------------------------------------
 # saving Data in NetCDF format
 #------------------------------------------------------------------------------
-def save_output_data(Root_output,initial_time_index,trajectories_duration,dt,niter,Nhor,Np,
+
+def save_output_data(Root_output,initial_time_index,
+                     list_var,list_var_advec,
+                     TIME_traj, LAT_traj, LON_traj, P_traj, U_traj, V_traj, W_traj,VAR_traj):
+    """ Write output data to nc file """
+    
+    Number_Seeds=LAT_traj.shape[0]
+    ipdt=LAT_traj.shape[1]-1
+    
+    print('Saving the trajectories data: ', end='')
+        
+    ncdf = Dataset(Root_output+'Traj_time_step_'+str(initial_time_index)+'.nc','w', format='NETCDF4')
+    ncdf.createDimension('n_seeds', Number_Seeds)
+    ncdf.createDimension('time_ind', ipdt+1)                        
+                  
+    for i_var,j_var in zip([TIME_traj, LAT_traj, LON_traj, P_traj, U_traj, V_traj, W_traj],
+                           ['time','lat','lon','P']+list_var_advec):
+        TMP_out = ncdf.createVariable(j_var, 'f8', ('n_seeds','time_ind'))  
+        TMP_out[:]=i_var
+                
+    for i_var in list_var:
+        TMP_out = ncdf.createVariable(i_var, 'f8', ('n_seeds','time_ind'))  
+        TMP_out[:]=VAR_traj[i_var]  
+            
+    #Metadata    
+    ncdf.initial_time=initial_time_index
+   
+    
+    ncdf.close()
+    print('ok')
+        
+    return
+
+
+def save_output_data_ERA5(Root_output,initial_time_index,
+                     list_var,list_var_advec,
+                     TIME_traj, LAT_traj, LON_traj, m_traj, P_traj, U_traj, V_traj, W_traj,VAR_traj):
+    """ Write output data to nc file if model level ERA5 grid """
+    
+    Number_Seeds=LAT_traj.shape[0]
+    ipdt=LAT_traj.shape[1]-1
+    
+    print('Saving the trajectories data: ', end='')
+        
+    ncdf = Dataset(Root_output+'Traj_time_step_'+str(initial_time_index)+'.nc','w', format='NETCDF4')
+    ncdf.createDimension('n_seeds', Number_Seeds)
+    ncdf.createDimension('time_ind', ipdt+1)                        
+                  
+    for i_var,j_var in zip([TIME_traj, LAT_traj, LON_traj, m_traj, P_traj, U_traj, V_traj, W_traj],
+                           ['time','lat','lon','m', 'P']+list_var_advec):
+        TMP_out = ncdf.createVariable(j_var, 'f8', ('n_seeds','time_ind'))  
+        TMP_out[:]=i_var
+                
+    for i_var in list_var:
+        TMP_out = ncdf.createVariable(i_var, 'f8', ('n_seeds','time_ind'))  
+        TMP_out[:]=VAR_traj[i_var]  
+            
+    #Metadata    
+    ncdf.initial_time=initial_time_index
+   
+    
+    ncdf.close()
+    print('ok')
+        
+    return
+
+
+def save_output_data_nico(Root_output,initial_time_index,trajectories_duration,dt,niter,Nhor,Np,
                      list_var,list_var_advec,
                      TIME_traj, LAT_traj, LON_traj, P_traj, U_traj, V_traj, W_traj,VAR_traj):
     """ Write output data to nc file """
@@ -573,7 +640,7 @@ def save_output_data(Root_output,initial_time_index,trajectories_duration,dt,nit
         
     return
 
-def save_output_data_ERA5(Root_output,initial_time_index, trajectories_duration, dt, niter, Nhor, Np,
+def save_output_data_ERA5_nico(Root_output,initial_time_index, trajectories_duration, dt, niter, Nhor, Np,
                      list_var,list_var_advec,
                      TIME_traj, LAT_traj, LON_traj, m_traj, P_traj, U_traj, V_traj, W_traj, VAR_traj):
     """ Write output data to nc file """
