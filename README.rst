@@ -33,7 +33,7 @@ Authors
 License
 ###########
 This tool is open-source under the [your chosen license]. Feel free to use and modify it according to the license terms.
-| Please cite **LagraTraj** in your publication: https://github.com/NicolasChiabrando/LagranTraj/ .
+| Please cite **LagraTraj** in your publication: https://github.com/NicolasChiabrando/LagranTraj/.
 
 ============
 Installation
