@@ -51,7 +51,7 @@ Ideally install it in a virtual environment (development version, master).
 
 
 ==========
-Tutorial
+Tutorial (for orthogonal grid)
 ==========
 
 Example: Computing trajectories
